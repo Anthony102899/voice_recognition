@@ -118,8 +118,78 @@ def end_point_detection(input_dir):
     plt.show()
 
 
+def discrete_fourier_transform(input_dir, frame):
+    # initialize the selected frame.
+    amplitude, nchannels, nframes, sample_width, framerate = voice_input(input_dir)
+    frame_length = 0.02
+    non_overlapping = 0.01
+    frame_size = round(framerate * frame_length)
+    non_overlapping_size = round(framerate * non_overlapping)
+    frames = []
+    counter = 0
+    while counter < nframes:
+        frames.append(amplitude[counter: counter + frame_size])
+        counter += non_overlapping_size
+
+    picked_frame = frames[frame]
+
+    # initialize the parameters for dft.
+    N = len(picked_frame)
+    real_temp = zeros(int(N/2))
+    imagine_temp = zeros(int(N/2))
+    energy_freq = zeros(int(N/2))
+
+    # apply dft.
+    for m in range(int(N/2)):
+        for k in range(N):
+            theta = 2 * pi * k * m / N
+            cos_basis = cos(theta)
+            cos_part = picked_frame[k] * cos_basis
+
+            sin_basis = sin(theta)
+            sin_part = picked_frame[k] * sin_basis
+
+            real_temp[m] += cos_part
+            imagine_temp[m] += sin_part
+        energy_freq[m] = abs(sqrt(pow(real_temp[m], 2) + pow(imagine_temp[m], 2)))
+
+    frequency = np.arange(0, N/2)
+    plt.plot(frequency, energy_freq)
+    plt.show()
+
+def pre_emphasis(input_dir, frame):
+    # initialize the selected frame.
+    amplitude, nchannels, nframes, sample_width, framerate = voice_input(input_dir)
+    frame_length = 0.02
+    non_overlapping = 0.01
+    frame_size = round(framerate * frame_length)
+    non_overlapping_size = round(framerate * non_overlapping)
+    frames = []
+    counter = 0
+    while counter < nframes:
+        frames.append(amplitude[counter: counter + frame_size])
+        counter += non_overlapping_size
+
+    picked_frame = frames[frame]
+
+    # apply pre_emphasis to the selected frame.
+    a = 0.95
+    signal2 = zeros(len(picked_frame))
+    for k in range(1, len(picked_frame)):
+        signal2[k] = picked_frame[k] - a * picked_frame[k - 1]
+
+    time = np.arange(0, len(picked_frame)) / framerate
+    plt.plot(time, signal2)
+    plt.show()
+
+    plt.plot(time, picked_frame)
+    plt.show()
+
+
 
 
 if __name__ == "__main__":
     # voice_plot(os.path.join(TRAINING_DIR, "s1a.wav"))
-    end_point_detection(os.path.join(TRAINING_DIR, "s1a.wav"))
+    # end_point_detection(os.path.join(TRAINING_DIR, "s1a.wav"))
+    # discrete_fourier_transform(os.path.join(TRAINING_DIR, "s1a.wav"), 177)
+    pre_emphasis(os.path.join(TRAINING_DIR, "s1a.wav"), 177)

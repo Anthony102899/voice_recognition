@@ -1,0 +1,27 @@
+def pre_emphasis(input_dir, frame):
+    # initialize the selected frame.
+    amplitude, nchannels, nframes, sample_width, framerate = voice_input(input_dir)
+    frame_length = 0.02
+    non_overlapping = 0.01
+    frame_size = round(framerate * frame_length)
+    non_overlapping_size = round(framerate * non_overlapping)
+    frames = []
+    counter = 0
+    while counter < nframes:
+        frames.append(amplitude[counter: counter + frame_size])
+        counter += non_overlapping_size
+
+    picked_frame = frames[frame]
+
+    # apply pre_emphasis to the selected frame.
+    a = 0.95
+    signal2 = zeros(len(picked_frame))
+    for k in range(1, len(picked_frame)):
+        signal2[k] = picked_frame[k] - a * picked_frame[k - 1]
+
+    time = np.arange(0, len(picked_frame)) / framerate
+    plt.plot(time, signal2)
+    plt.show()
+
+    plt.plot(time, picked_frame)
+    plt.show()
