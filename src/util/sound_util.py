@@ -99,23 +99,28 @@ def end_point_detection(input_dir):
     starting_time = 0.01 * starting_point
     ending_point = starting_point
     for i in range(starting_point, len(frames)):
-        if starting_point < 2:
+        if starting_point < 4:
             continue
         else:
-            if frame_energy[i] < energy_bound and frame_energy[i - 1] < energy_bound and frame_energy[i - 2] < energy_bound:
+            if frame_energy[i] < energy_bound and frame_energy[i - 1] < energy_bound and frame_energy[i - 2] < energy_bound and frame_energy[i - 3] < energy_bound and frame_energy[i - 4] < energy_bound:
                 ending_point = i
                 break
     print(ending_point)
     ending_time = 0.01 * ending_point
     # plot the start and ending point in the figure
-    time = np.arange(0, nframes) / framerate
-    plt.plot(time, amplitude)
-    plt.hlines(amplitude, starting_time, starting_time + 0.01, colors="r")
-    plt.hlines(amplitude, ending_time, ending_time + 0.01, colors="r")
-
-    plt.hlines(amplitude, starting_time + 0.04, starting_time + 0.045, colors="g")
-    plt.hlines(amplitude, starting_time + 0.06, starting_time + 0.065, colors="g")
-    plt.show()
+    # time = np.arange(0, nframes) / framerate
+    # plt.plot(time, amplitude)
+    # plt.hlines(amplitude, starting_time, starting_time + 0.01, colors="r")
+    # plt.hlines(amplitude, ending_time, ending_time + 0.01, colors="r")
+    #
+    # plt.hlines(amplitude, starting_time + 0.04, starting_time + 0.045, colors="g")
+    # plt.hlines(amplitude, starting_time + 0.06, starting_time + 0.065, colors="g")
+    # plt.show()
+    vocal_part = []
+    for i in range(starting_point, ending_point):
+        for j in range(len(frames[i])):
+            vocal_part.append(frames[i][j])
+    return vocal_part
 
 
 def discrete_fourier_transform(input_dir, frame):
@@ -212,8 +217,8 @@ def linear_prediction_coding(signal):
 
 if __name__ == "__main__":
     # voice_plot(os.path.join(TRAINING_DIR, "s1a.wav"))
-    # end_point_detection(os.path.join(TRAINING_DIR, "s1a.wav"))
+    end_point_detection(os.path.join(TRAINING_DIR, "s4a.wav"))
     # discrete_fourier_transform(os.path.join(TRAINING_DIR, "s1a.wav"), 177)
-    signal = pre_emphasis(os.path.join(TRAINING_DIR, "s1a.wav"), 177)
-    linear_prediction_coding(signal)
+    # signal = pre_emphasis(os.path.join(TRAINING_DIR, "s1a.wav"), 177)
+    # linear_prediction_coding(signal)
 
