@@ -177,19 +177,43 @@ def pre_emphasis(input_dir, frame):
     signal2 = zeros(len(picked_frame))
     for k in range(1, len(picked_frame)):
         signal2[k] = picked_frame[k] - a * picked_frame[k - 1]
+    signal2[0] = signal2[1]  # assume s'[0] = s'[1]
 
     time = np.arange(0, len(picked_frame)) / framerate
-    plt.plot(time, signal2)
-    plt.show()
+    # plt.plot(time, signal2)
+    # plt.show()
+    #
+    # plt.plot(time, picked_frame)
+    # plt.show()
+    return signal2
 
-    plt.plot(time, picked_frame)
-    plt.show()
 
+def linear_prediction_coding(signal):
+    # find the auto correlation coefficient.
+    auto_coeff = zeros(11)
+    for i in range(11):
+        for j in range(i, len(signal)):
+            auto_coeff[i] += signal[j] * signal[j - 1]
 
-
+    # find the lpc coefficient.
+    coeff_matrix = zeros((10, 10))
+    for i in range(10):
+        for j in range(i):
+            coeff_matrix[i][j] = auto_coeff[i - j]
+        for j in range(i, 10):
+            coeff_matrix[i][j] = auto_coeff[j - i]
+    coeff_vector = zeros(10)
+    for i in range(10):
+        coeff_vector[i] = auto_coeff[i + 1]
+    coeff_vector = coeff_vector.T
+    inversed_coeff_matrix = np.linalg.inv(coeff_matrix)
+    result = inversed_coeff_matrix @ coeff_vector
+    print(result)
 
 if __name__ == "__main__":
     # voice_plot(os.path.join(TRAINING_DIR, "s1a.wav"))
     # end_point_detection(os.path.join(TRAINING_DIR, "s1a.wav"))
     # discrete_fourier_transform(os.path.join(TRAINING_DIR, "s1a.wav"), 177)
-    pre_emphasis(os.path.join(TRAINING_DIR, "s1a.wav"), 177)
+    signal = pre_emphasis(os.path.join(TRAINING_DIR, "s1a.wav"), 177)
+    linear_prediction_coding(signal)
+
