@@ -95,7 +95,7 @@ def end_point_detection(input_dir):
         if frame_energy[i] >= energy_bound and frame_energy[i + 1] >= energy_bound and frame_energy[i + 2] >= energy_bound:
             starting_point = i
             break
-    print(starting_point)
+    # print(starting_point)
     starting_time = 0.01 * starting_point
     ending_point = starting_point
     for i in range(starting_point, len(frames)):
@@ -105,7 +105,7 @@ def end_point_detection(input_dir):
             if frame_energy[i] < energy_bound and frame_energy[i - 1] < energy_bound and frame_energy[i - 2] < energy_bound and frame_energy[i - 3] < energy_bound and frame_energy[i - 4] < energy_bound:
                 ending_point = i
                 break
-    print(ending_point)
+    # print(ending_point)
     ending_time = 0.01 * ending_point
     # plot the start and ending point in the figure
     # time = np.arange(0, nframes) / framerate
