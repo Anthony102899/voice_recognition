@@ -25,7 +25,7 @@ def extract_mfcc_feat(input_dir):
     return mfcc_feat
 
 
-def get_all_mfcc_feat():
+def get_all_mfcc_feat(debug=False):
     training_data = []
     test_data = []
     training_path = "../data/training data"
@@ -36,16 +36,16 @@ def get_all_mfcc_feat():
     for file in os.listdir(test_path):
         if file.split('.')[1] == "wav":
             test_data.append(extract_mfcc_feat(os.path.join(test_path, file)))
+    if debug:
+        mfcc_dynamic_programming(training_data[5], test_data[5], debug=True)
+    con_table = zeros((6, 6))
+    for i in range(6):
+        for j in range(6):
+            con_table[i][j] = mfcc_dynamic_programming(training_data[i], test_data[j])
+    print(con_table)
 
-    mfcc_dynamic_programming(training_data[5], test_data[5])
-    # con_table = zeros((6, 6))
-    # for i in range(6):
-    #     for j in range(6):
-    #         con_table[i][j] = mfcc_dynamic_programming(training_data[i], test_data[j])
-    # print(con_table)
 
-
-def mfcc_dynamic_programming(mfcc1, mfcc2):
+def mfcc_dynamic_programming(mfcc1, mfcc2, debug=False):
     col = mfcc1.shape[0]
     row = mfcc2.shape[0]
     dp_matrix = zeros((col, row))
@@ -106,9 +106,9 @@ def mfcc_dynamic_programming(mfcc1, mfcc2):
     for i in range(len(optimal_path)):
         tmp.append(optimal_path[len(optimal_path) - i - 1])
     optimal_path = tmp
-    print(optimal_path)
-
-    paint_dp_matrix(accumulate_matrix, optimal_path)
+    # print(optimal_path)
+    if debug:
+        paint_dp_matrix(accumulate_matrix, optimal_path)
     return min_value
 
 
@@ -148,4 +148,8 @@ def paint_dp_matrix(dp_matrix, optimal_path):
 
 if __name__ == '__main__':
     # extract_mfcc_feat("C:\\Users\\24111\\PycharmProjects\\voice-recognition\\data\\training data\\s1a.wav")
-    get_all_mfcc_feat()
+    argv = sys.argv
+    debug = False
+    if len(argv) > 1 and argv[1] == 'debug':
+        debug = True
+    get_all_mfcc_feat(debug)

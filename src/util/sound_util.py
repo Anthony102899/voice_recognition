@@ -47,7 +47,7 @@ def voice_plot(input_dir):
 
 
 # return the T1, T2 that denote for the start and the end of speech voice respectively.
-def end_point_detection(input_dir):
+def end_point_detection(input_dir, debug=False):
     amplitude, nchannels, nframes, sample_width, framerate = voice_input(input_dir)
     energy = zeros(nframes)
     for i in range(nframes):
@@ -108,14 +108,15 @@ def end_point_detection(input_dir):
     # print(ending_point)
     ending_time = 0.01 * ending_point
     # plot the start and ending point in the figure
-    # time = np.arange(0, nframes) / framerate
-    # plt.plot(time, amplitude)
-    # plt.hlines(amplitude, starting_time, starting_time + 0.01, colors="r")
-    # plt.hlines(amplitude, ending_time, ending_time + 0.01, colors="r")
-    #
-    # plt.hlines(amplitude, starting_time + 0.04, starting_time + 0.045, colors="g")
-    # plt.hlines(amplitude, starting_time + 0.06, starting_time + 0.065, colors="g")
-    # plt.show()
+    if debug:
+        time = np.arange(0, nframes) / framerate
+        plt.plot(time, amplitude)
+        plt.hlines(amplitude, starting_time, starting_time + 0.01, colors="r")
+        plt.hlines(amplitude, ending_time, ending_time + 0.01, colors="r")
+
+        plt.hlines(amplitude, starting_time + 0.04, starting_time + 0.045, colors="g")
+        plt.hlines(amplitude, starting_time + 0.06, starting_time + 0.065, colors="g")
+        plt.show()
     vocal_part = []
     for i in range(starting_point, ending_point):
         for j in range(len(frames[i])):
@@ -162,7 +163,8 @@ def discrete_fourier_transform(input_dir, frame):
     plt.plot(frequency, energy_freq)
     plt.show()
 
-def pre_emphasis(input_dir, frame):
+
+def pre_emphasis(input_dir, frame, debug=False):
     # initialize the selected frame.
     amplitude, nchannels, nframes, sample_width, framerate = voice_input(input_dir)
     frame_length = 0.02
@@ -183,13 +185,12 @@ def pre_emphasis(input_dir, frame):
     for k in range(1, len(picked_frame)):
         signal2[k] = picked_frame[k] - a * picked_frame[k - 1]
     signal2[0] = signal2[1]  # assume s'[0] = s'[1]
-
-    time = np.arange(0, len(picked_frame)) / framerate
-    # plt.plot(time, signal2)
-    # plt.show()
-    #
-    # plt.plot(time, picked_frame)
-    # plt.show()
+    if debug:
+        time = np.arange(0, len(picked_frame)) / framerate
+        plt.plot(time, picked_frame)
+        plt.show()
+        plt.plot(time, signal2)
+        plt.show()
     return signal2
 
 
@@ -215,10 +216,21 @@ def linear_prediction_coding(signal):
     result = inversed_coeff_matrix @ coeff_vector
     print(result)
 
+
 if __name__ == "__main__":
-    # voice_plot(os.path.join(TRAINING_DIR, "s1a.wav"))
-    end_point_detection(os.path.join(TRAINING_DIR, "s4a.wav"))
+    argv = sys.argv
+    assert len(argv) == 2
+    if argv[1] == '1':
+        voice_plot(os.path.join(TRAINING_DIR, "s1a.wav"))
+    elif argv[1] == '2':
+        end_point_detection(os.path.join(TRAINING_DIR, "s1a.wav"), debug=True)
+    elif argv[1] == '3':
+        discrete_fourier_transform(os.path.join(TRAINING_DIR, "s1a.wav"), 177)
+    elif argv[1] == '4':
+        pre_emphasis(os.path.join(TRAINING_DIR, "s1a.wav"), 177, True)
+    elif argv[1] == '5':
+        signal = pre_emphasis(os.path.join(TRAINING_DIR, "s1a.wav"), 177)
+        linear_prediction_coding(signal)
     # discrete_fourier_transform(os.path.join(TRAINING_DIR, "s1a.wav"), 177)
-    # signal = pre_emphasis(os.path.join(TRAINING_DIR, "s1a.wav"), 177)
-    # linear_prediction_coding(signal)
+
 
