@@ -45,6 +45,7 @@ def get_all_mfcc_feat(debug=False):
     print(con_table)
 
 
+
 def mfcc_dynamic_programming(mfcc1, mfcc2, debug=False):
     col = mfcc1.shape[0]
     row = mfcc2.shape[0]
@@ -146,9 +147,13 @@ def paint_dp_matrix(dp_matrix, optimal_path):
                 row.fill = fill
     ff.save('accumulate_dp_matrix.xlsx')
 
+
+
+
 if __name__ == '__main__':
     # extract_mfcc_feat("C:\\Users\\24111\\PycharmProjects\\voice-recognition\\data\\training data\\s1a.wav")
     argv = sys.argv
+    assert len(argv) < 3
     debug = False
     if len(argv) > 1 and argv[1] == 'debug':
         debug = True
