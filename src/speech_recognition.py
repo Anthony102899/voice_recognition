@@ -42,7 +42,7 @@ def get_all_mfcc_feat(debug=False):
     for i in range(6):
         for j in range(6):
             con_table[i][j] = mfcc_dynamic_programming(training_data[i], test_data[j])
-    print(con_table)
+    paint_confusion_table(con_table)
 
 
 
@@ -50,17 +50,17 @@ def mfcc_dynamic_programming(mfcc1, mfcc2, debug=False):
     col = mfcc1.shape[0]
     row = mfcc2.shape[0]
     dp_matrix = zeros((col, row))
+    # set the restricted area
     restricted_col = int(round(col * 0.8))
     restricted_row = int(round(row * 0.8))
 
-    restricted_table = zeros((col, row))
-
+    # calculate the dists between frames
     for i in range(col):
         for j in range(row):
             for k in range(1, 13):
                 dp_matrix[i][j] += pow(mfcc1[i, k] - mfcc2[j, k], 2)
             dp_matrix[i][j] = sqrt(dp_matrix[i][j])
-
+    # calculate the accumulate dp matrix
     accumulate_matrix = zeros((col, row))
     accumulate_matrix[0, 0] = dp_matrix[0, 0]
     for i in range(col):
@@ -73,6 +73,7 @@ def mfcc_dynamic_programming(mfcc1, mfcc2, debug=False):
                 accumulate_matrix[i, j] = dp_matrix[i, j] + min(accumulate_matrix[i, j - 1],
                                                                 accumulate_matrix[i - 1, j - 1],
                                                                 accumulate_matrix[i - 1, j])
+    # find the minimum accumulate value at top/right border outside restricted area.
     min_value = +inf
     min_index = [0, 0]
     for i in range(restricted_row, row):
@@ -85,6 +86,8 @@ def mfcc_dynamic_programming(mfcc1, mfcc2, debug=False):
             min_index = [i, row - 1]
     # print(min_index)
     # print(min_value)
+
+    # find the optimal path from the minimum value.
     optimal_path = [min_index]
     current_index = min_index
     optimal_list = [min_value]
@@ -109,11 +112,12 @@ def mfcc_dynamic_programming(mfcc1, mfcc2, debug=False):
     optimal_path = tmp
     # print(optimal_path)
     if debug:
+        # draw the accumulated matrix together with the optimal path in an Excel file.
         paint_dp_matrix(accumulate_matrix, optimal_path)
     return min_value
 
 
-# Write the dp matrix into excel file and paint the bg color.
+# Write the dp matrix into Excel file and paint the bg color for optimal path.
 def paint_dp_matrix(dp_matrix, optimal_path):
     data = []
     for i in range(dp_matrix.shape[0]):
@@ -148,6 +152,21 @@ def paint_dp_matrix(dp_matrix, optimal_path):
     ff.save('accumulate_dp_matrix.xlsx')
 
 
+def paint_confusion_table(confusion_table):
+    data = []
+    for i in range(confusion_table.shape[0]):
+        line = []
+        for j in range(confusion_table.shape[1]):
+            line.append(confusion_table[i, j])
+        data.append(line)
+    data_df = pd.DataFrame(data)
+    columns = [1, 2, 3, 4, 5, 8]
+    rows = [1, 2, 3, 4, 5, 8]
+    data_df.columns = rows
+    data_df.index = columns
+    writer = pd.ExcelWriter('confusion_table.xlsx')
+    data_df.to_excel(writer, float_format='%.5f')
+    writer.save()
 
 
 if __name__ == '__main__':
